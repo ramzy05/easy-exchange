@@ -4,13 +4,14 @@ from django.shortcuts import render, redirect
 from .forms import CreateAccountForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .models import Account
+from .models import Account, Country, Transaction
 from django.http.response import JsonResponse
 from django.conf import settings
 
 
 def home_view(request):
-  context = {'username': 'ramses'}
+
+  context = {}
   return render(request, 'exchange/home.html', context)
 
 
@@ -71,3 +72,21 @@ def signin_view(request):
 def signout_view(request):
   logout(request)
   return redirect('home')
+
+
+@login_required(login_url='login')
+def transaction_view(request):
+  countries = Country.objects.all()
+  context = {'countries': countries, }
+  return render(request, 'exchange/transaction.html',  context)
+
+
+def get_users_per_country_view(request, country):
+  if country == '':
+    return JsonResponse({'result:': False, 'users': [], 'currency': ''}, safe=False, status=400)
+
+  users = Account.objects.filter(country=country)
+  users = [{'username': user.username, 'first_name': user.first_name,
+            'last_name': user.last_name} for user in users]
+  currency = Country.objects.get(name=country).currency or ''
+  return JsonResponse({'result:': True, 'users': users, 'currency': currency}, safe=False, status=200)
