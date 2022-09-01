@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Transaction
+{% endblock title %}
+
+{% block content %}
+{% if request.user.is_authenticated %}
+<a href={% url 'logout' %}>Log Out</a>
+{{request.user.get_transfers}}
+{% else %}
+<a href={% url 'login' %}>Log In</a>
+<a href={% url 'register' %}>Register</a>
+{% endif %}
+
+<div class="form-container">
+    <form action="" method="post" id="signin-form">
+        {%csrf_token%}
+        <div class="form-control">
+            <label for="id_country">Receiver's country</label>
+            <select name="country" id="id_country">
+                <option value='' >Choose the country</option>
+                {% for country in countries %}
+                <option value="{{country.name}}">{{country.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-control">
+            <label for="id_receiver">Receiver</label>
+            <select name="receiver" id="id_receiver">
+                <option value="">Choose the receiver</option>
+                {% for user in users %}
+                <option value="{{user.username}}">
+                    {{user.username}}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-control">
+            <label for="id_amount">From <span>{{request.user.get_country_currency}}</span></label>
+            <input type="number" name="amount" id="id_amount">
+        </div>
+        <div class="form-control">
+            <label for="id_amount_converted">To <span></span></label>
+            <input type="number" name="amount_converted" id="id_amount_converted">
+        </div>
+    
+        <button type="submit" id="submit-btn">Send</button>
+    </form>
+</div>
+
+{% endblock content %}
+
+{% block scripts %}
+<script>
+const countryInput = document.getElementById('id_country')
+const receiverInput = document.getElementById('id_receiver')
+const fromCurrencyInput = document.querySelector('[for="id_amount"]').querySelector('span')
+const toCurrencyInput = document.querySelector('[for="id_amount_converted"]').querySelector('span')
+countryInput.onchange = handleCountryOnChange  
+
+
+function load_users(users){
+    let usersFormats = `<option value="">Choose the receiver</option>`
+    for(user of users){
+        usersFormats += `<option value="${user.username}">${user.first_name} ${user.last_name}</option>`
+
+    }
+    receiverInput.innerHTML = usersFormats 
+}
+
+function handleCountryOnChange(e){
+    event.preventDefault()
+        const country = event.target.value
+        const url = '/account/users/'+country
+        const method = 'POST'
+        const csrftoken = getCookie('csrftoken')
+        const xhr = new XMLHttpRequest()
+        const responseType = 'json'
+        xhr.responseType = responseType
+        xhr.open(method, url)
+        xhr.setRequestHeader('X-CSRFToken', csrftoken)
+        xhr.onload =  function(){
+            if(xhr.status === 200){
+                console.log(xhr.response)
+                load_users(xhr.response.users)
+                toCurrencyInput.innerHTML = xhr.response.currency    
+            } else if(xhr.status === 400){
+               console.log(xhr.response)
+            } else if(xhr.status === 404){
+                console.log(xhr.response)
+                toCurrencyInput.innerHTML =''
+            }else if (status === 500){
+                alert('There was a server error, please try again.')
+            }
+        }
+        xhr.onerror = function(){
+            alert('An error occured, Please try again later.')
+        }
+        xhr.send()
+}
+</script>
+{% endblock scripts %}
+
+

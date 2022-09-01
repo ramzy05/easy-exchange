@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Register
+{% endblock title %}
+
+{% block content %}
+<div class="form-container">
+    <form action="" method="post" id="signup-form">
+        {%csrf_token%}
+        <div class="form-control">
+            {{form.username.label_tag}}
+            {{form.username}}
+            <div class="errors"></div>
+        </div>
+        <div class="form-control">
+            {{form.first_name.label_tag}}
+            {{form.first_name}}
+            <div class="errors"></div>
+        </div>
+        <div class="form-control">
+            {{form.last_name.label_tag}}
+            {{form.last_name}}
+            <div class="errors"></div>
+        </div>
+    
+        <div class="form-control">
+            {{form.country}}
+            {{form.country.label_tag}}
+            <div class="errors"></div>
+        </div>
+        <div class="form-control">
+            {{form.password1.label_tag}}
+            {{form.password1}}
+            <div class="errors"></div>
+        </div>
+        <div class="form-control">
+            {{form.password2.label_tag}}
+            {{form.password2}}
+            <div class="errors"></div>
+        </div>
+    
+        <button type="submit" id="submit-btn">Register</button>
+    </form>
+</div>
+
+{% endblock content %}
+
+
+{% block scripts %}
+<script >
+    function handleAccountCreateFormDidSubmit(event){
+        event.preventDefault()
+        const myForm = event.target
+        const myFormData = new FormData(myForm)
+        const url = myForm.getAttribute('action')
+        const method = myForm.getAttribute('method')
+        const xhr = new XMLHttpRequest()
+        const responseType = 'json'
+        xhr.responseType = responseType
+        xhr.open(method, url)
+        xhr.onload =  function(){
+            if(xhr.status === 201){
+                console.log(xhr.response)
+                myForm.reset()
+            } else if(xhr.status === 400){
+               console.log(xhr.response)
+                   
+               
+            }else if (status === 500){
+                alert('There was a server error, please try again.')
+            }
+        }
+        xhr.onerror = function(){
+            alert('An error occured, Please try again later.')
+        }
+        xhr.send(myFormData)
+    }
+    const signupForm = document.getElementById('signup-form')
+    signupForm.addEventListener('submit', handleAccountCreateFormDidSubmit)
+    console.log(signupForm)
+</script>    
+{% endblock scripts %}
