@@ -148,6 +148,7 @@ function imposeMinMax(el){
   }
 function convertAmount(to,from,amount){
     // return 100
+    if (to == '') return
     var myHeaders = new Headers();
 myHeaders.append("apikey", "wS55XguJEzNOuWaCmBQ2sCLmLKtg2vge");
 

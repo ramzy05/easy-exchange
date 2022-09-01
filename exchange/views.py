@@ -80,7 +80,6 @@ def transaction_view(request):
     countries = Country.objects.all()
     context = {'countries': countries, }
     if request.method == 'POST':
-        print(new_transaction.amount)
         user_pin_code = request.POST['pin_code']
         withdraw_amount = decimal.Decimal(request.POST['amount'])
         received_amount = decimal.Decimal(request.POST['amount_converted'])
@@ -95,7 +94,7 @@ def transaction_view(request):
         receiver.balance += received_amount
         user.save(update_fields=['balance'])
         receiver.save(update_fields=['balance'])
-        new_transaction = Transaction(
+        new_transaction = Transaction.objects.create(
             sender=user, receiver=receiver, amount=withdraw_amount)
         if new_transaction:
             return JsonResponse({'result': True}, safe=False, status=201)
