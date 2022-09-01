@@ -42,7 +42,7 @@
         </div>
         <div class="form-control">
             <label for="id_amount_converted">To <span></span></label>
-            <input type="number" value="" name="amount_converted" id="id_amount_converted" readonly>
+            <input type="number" min="5" value="" name="amount_converted" id="id_amount_converted">
             <!-- <input type="number" value="10" name="amount_converted" id="id_amount_converted" readonly> -->
         </div>
         <div class="form-control">
@@ -68,8 +68,9 @@ const toCurrencyInput = document.querySelector('#id_amount_converted')
 
 countryInput.onchange = handleCountryOnChange 
 
-fromCurrencyInput.onblur = handleBlurOnFromAmountInput
-codePin.addEventListener('keypress', typeOnlyDigits);
+fromCurrencyInput.onchange = handleChangeOnFromAmountInput
+toCurrencyInput.onchange = handleChangeOnToAmountInput
+codePin.onkeypress = typeOnlyDigits;
 
 function typeOnlyDigits(e){
     if (e.which < 48 || e.which > 57) {
@@ -110,7 +111,7 @@ function handleCountryOnChange(e){
                     let to = toCurrencyLabel.innerText
                     let from = fromCurrencyLabel.innerText
                     let amount = fromCurrencyInput.value
-                    convertAmount(to, from, amount)
+                    convertAmount(to, from, amount,'from-to')
                
             } else if(xhr.status === 400){
                 console.log(xhr.response)
@@ -127,13 +128,22 @@ function handleCountryOnChange(e){
         xhr.send()
 }
 
-function handleBlurOnFromAmountInput(e) {
+function handleChangeOnFromAmountInput(e) {
     imposeMinMax(e.target)
     if (countryInput.value !== ''){
         let to = toCurrencyLabel.innerText
         let from = fromCurrencyLabel.innerText
         let amount = e.target.value 
-        convertAmount(to, from, amount)
+        convertAmount(to, from, amount,'from-to')
+    }
+}
+
+function handleChangeOnToAmountInput(e){
+    if (countryInput.value !== ''){
+        let from = toCurrencyLabel.innerText
+        let to = fromCurrencyLabel.innerText
+        let amount = e.target.value 
+        convertAmount(to, from, amount,'to-from')
     }
 }
 function imposeMinMax(el){
@@ -146,9 +156,9 @@ function imposeMinMax(el){
       }
     }
   }
-function convertAmount(to,from,amount){
+function convertAmount(to,from,amount, direction){
     // return 100
-    if (to == '') return
+    if (to == '' || from == '') return
     var myHeaders = new Headers();
 myHeaders.append("apikey", "wS55XguJEzNOuWaCmBQ2sCLmLKtg2vge");
 
@@ -163,7 +173,21 @@ fetch(`https://api.apilayer.com/exchangerates_data/convert?to=${to}&from=${from}
   .then(result => {
     let data = JSON.parse(result)
     if(data?.success === true){
-        toCurrencyInput.value = data.result
+        if(direction === 'from-to'){
+            toCurrencyInput.value = data.result
+        }
+        else{
+
+            fromCurrencyInput.value = data.result
+            if(parseInt(data.result) > fromCurrencyInput.max){
+                imposeMinMax(fromCurrencyInput)
+                let to = toCurrencyLabel.innerText
+                let from = fromCurrencyLabel.innerText
+                let amount = fromCurrencyInput.max
+                convertAmount(to, from, amount,'from-to')
+
+            }
+        }
     }
   })
   .catch(error => console.log('error', error));
