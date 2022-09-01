@@ -38,11 +38,11 @@
         </div>
         <div class="form-control">
             <label for="id_amount">From <span>{{request.user.get_country_currency}}</span></label>
-            <input type="number" name="amount" id="id_amount">
+            <input type="number" onkeyup=imposeMinMax(this) name="amount" id="id_amount" min="0" max={{request.user.balance}}>
         </div>
         <div class="form-control">
             <label for="id_amount_converted">To <span></span></label>
-            <input type="number" name="amount_converted" id="id_amount_converted">
+            <input type="number" min="0" name="amount_converted" id="id_amount_converted" readonly>
         </div>
     
         <button type="submit" id="submit-btn">Send</button>
@@ -57,7 +57,7 @@ const countryInput = document.getElementById('id_country')
 const receiverInput = document.getElementById('id_receiver')
 const fromCurrencyInput = document.querySelector('[for="id_amount"]').querySelector('span')
 const toCurrencyInput = document.querySelector('[for="id_amount_converted"]').querySelector('span')
-countryInput.onchange = handleCountryOnChange  
+countryInput.onchange = handleCountryOnChange 
 
 
 function load_users(users){
@@ -99,6 +99,17 @@ function handleCountryOnChange(e){
         }
         xhr.send()
 }
+
+function imposeMinMax(el){
+    if(el.value != ""){
+      if(parseInt(el.value) < parseInt(el.min)){
+        el.value = el.min;
+      }
+      if(parseInt(el.value) > parseInt(el.max)){
+        el.value = el.max;
+      }
+    }
+  }
 </script>
 {% endblock scripts %}
 
