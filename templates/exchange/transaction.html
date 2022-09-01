@@ -14,12 +14,12 @@
 {% endif %}
 
 <div class="form-container">
-    <form action="" method="post" id="signin-form">
+    <form action="" method="post" id="transac-form">
         {%csrf_token%}
         <div class="form-control">
             <label for="id_country">Receiver's country</label>
             <select name="country" id="id_country">
-                <option value='' >Choose the country</option>
+                <option value=' ' selected>Choose the country</option>
                 {% for country in countries %}
                 <option value="{{country.name}}">{{country.name}}</option>
                 {% endfor %}
@@ -28,7 +28,7 @@
         <div class="form-control">
             <label for="id_receiver">Receiver</label>
             <select name="receiver" id="id_receiver">
-                <option value="">Choose the receiver</option>
+                <option value=' ' selected>Choose the receiver</option>
                 {% for user in users %}
                 <option value="{{user.username}}">
                     {{user.username}}
@@ -38,11 +38,15 @@
         </div>
         <div class="form-control">
             <label for="id_amount">From <span>{{request.user.get_country_currency}}</span></label>
-            <input type="number" onkeyup=imposeMinMax(this) name="amount" id="id_amount" min="0" max={{request.user.balance}}>
+            <input type="number" value="5" name="amount" id="id_amount" min="5" max={{request.user.balance}}>
         </div>
         <div class="form-control">
             <label for="id_amount_converted">To <span></span></label>
-            <input type="number" min="0" name="amount_converted" id="id_amount_converted" readonly>
+            <input type="number" value="10" name="amount_converted" id="id_amount_converted" readonly>
+        </div>
+        <div class="form-control">
+            <label for="id_code_pin">Pin Code</label>
+            <input type="password" name="pin_code" id="id_code_pin" maxlength="4" placeholder="1234">
         </div>
     
         <button type="submit" id="submit-btn">Send</button>
@@ -53,15 +57,27 @@
 
 {% block scripts %}
 <script>
+const codePin = document.getElementById('id_code_pin')
 const countryInput = document.getElementById('id_country')
 const receiverInput = document.getElementById('id_receiver')
-const fromCurrencyInput = document.querySelector('[for="id_amount"]').querySelector('span')
-const toCurrencyInput = document.querySelector('[for="id_amount_converted"]').querySelector('span')
+const fromCurrencyLabel = document.querySelector('[for="id_amount"]').querySelector('span')
+const toCurrencyLabel = document.querySelector('[for="id_amount_converted"]').querySelector('span')
+const fromCurrencyInput = document.querySelector('#id_amount')
+const toCurrencyInput = document.querySelector('#id_amount_converted')
+
 countryInput.onchange = handleCountryOnChange 
 
+fromCurrencyInput.onblur = handleBlurOnFromAmountInput
+codePin.addEventListener('keypress', typeOnlyDigits);
+
+function typeOnlyDigits(e){
+    if (e.which < 48 || e.which > 57) {
+    e.preventDefault();
+  }
+}
 
 function load_users(users){
-    let usersFormats = `<option value="">Choose the receiver</option>`
+    let usersFormats = `<option value=" ">Choose the receiver</option>`
     for(user of users){
         usersFormats += `<option value="${user.username}">${user.first_name} ${user.last_name}</option>`
 
@@ -70,7 +86,12 @@ function load_users(users){
 }
 
 function handleCountryOnChange(e){
-    event.preventDefault()
+    if(e.target.value === ' '){
+        load_users([])
+        toCurrencyLabel.innerHTML = ''
+        return
+    }
+    e.preventDefault()
         const country = event.target.value
         const url = '/account/users/'+country
         const method = 'POST'
@@ -82,14 +103,19 @@ function handleCountryOnChange(e){
         xhr.setRequestHeader('X-CSRFToken', csrftoken)
         xhr.onload =  function(){
             if(xhr.status === 200){
-                console.log(xhr.response)
                 load_users(xhr.response.users)
-                toCurrencyInput.innerHTML = xhr.response.currency    
+                toCurrencyLabel.innerHTML = xhr.response.currency    
+               
+                    let to = toCurrencyLabel.innerText
+                    let from = fromCurrencyLabel.innerText
+                    let amount = fromCurrencyInput.value
+                    convertAmount(to, from, amount)
+               
             } else if(xhr.status === 400){
-               console.log(xhr.response)
+                console.log(xhr.response)
             } else if(xhr.status === 404){
                 console.log(xhr.response)
-                toCurrencyInput.innerHTML =''
+                toCurrencyLabel.innerHTML =''
             }else if (status === 500){
                 alert('There was a server error, please try again.')
             }
@@ -100,6 +126,15 @@ function handleCountryOnChange(e){
         xhr.send()
 }
 
+function handleBlurOnFromAmountInput(e) {
+    imposeMinMax(e.target)
+    if (countryInput.value !== ''){
+        let to = toCurrencyLabel.innerText
+        let from = fromCurrencyLabel.innerText
+        let amount = e.target.value 
+        convertAmount(to, from, amount)
+    }
+}
 function imposeMinMax(el){
     if(el.value != ""){
       if(parseInt(el.value) < parseInt(el.min)){
@@ -110,6 +145,72 @@ function imposeMinMax(el){
       }
     }
   }
+function convertAmount(to,from,amount){
+    // return 100
+    var myHeaders = new Headers();
+myHeaders.append("apikey", "wS55XguJEzNOuWaCmBQ2sCLmLKtg2vge");
+
+var requestOptions = {
+  method: 'GET',
+  redirect: 'follow',
+  headers: myHeaders
+};
+
+fetch(`https://api.apilayer.com/exchangerates_data/convert?to=${to}&from=${from}&amount=${amount}`, requestOptions)
+  .then(response => response.text())
+  .then(result => {
+    let data = JSON.parse(result)
+    if(data?.success === true){
+        toCurrencyInput.value = data.result
+    }
+  })
+  .catch(error => console.log('error', error));
+}
+
+function inputsAreNotBlank(){
+    return (
+        countryInput.value != ' ' && 
+        fromCurrencyInput.value != '' && 
+        toCurrencyInput.value != '' &&
+        receiverInput.value != ' ' &&
+        codePin.value != ''
+    )
+}
+function handleTransactionFormDidSubmit(e){
+        e.preventDefault()
+        const myForm = e.target
+        const myFormData = new FormData(myForm)
+        const url = myForm.getAttribute('action')
+        const method = myForm.getAttribute('method')
+        if (inputsAreNotBlank()){
+
+            const xhr = new XMLHttpRequest()
+            const responseType = 'json'
+        xhr.responseType = responseType
+        xhr.open(method, url)
+        xhr.onload =  function(){
+            if(xhr.status === 201){
+                console.log(xhr.response)
+                myForm.reset()
+            } else if(xhr.status === 400){
+               console.log(xhr.response)
+                   
+               
+            }else if (status === 500){
+                alert('There was a server error, please try again.')
+            }
+        }
+        xhr.onerror = function(){
+            alert('An error occured, Please try again later.')
+        }
+        xhr.send(myFormData)
+    }else{
+        alert('please fill all the fields')
+    }
+}
+    const transacForm = document.getElementById('transac-form')
+    transacForm.addEventListener('submit', handleTransactionFormDidSubmit)
+
 </script>
 {% endblock scripts %}
 

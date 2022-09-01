@@ -7,86 +7,110 @@ from django.contrib.auth.decorators import login_required
 from .models import Account, Country, Transaction
 from django.http.response import JsonResponse
 from django.conf import settings
+import decimal
 
 
 def home_view(request):
 
-  context = {}
-  return render(request, 'exchange/home.html', context)
+    context = {}
+    return render(request, 'exchange/home.html', context)
 
 
 def create_account_view(request):
-  if request.user.is_authenticated:
-    return redirect('home')
-  form = CreateAccountForm()
-  if request.method == 'POST':
-    form = CreateAccountForm(request.POST)
-    if form.is_valid():
-      form.save()
-      return JsonResponse({'result': True}, safe=False, status=201)
-    else:
-      print(form.errors.as_json())
-      return JsonResponse({'result': False, 'errors': json.loads(form.errors.as_json())}, safe=False, status=400)
-  context = {
-      'form': form,
-  }
-  return render(request, 'exchange/signup.html', context)
+    if request.user.is_authenticated:
+        return redirect('home')
+    form = CreateAccountForm()
+    if request.method == 'POST':
+        form = CreateAccountForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'result': True}, safe=False, status=201)
+        else:
+            return JsonResponse({'result': False, 'errors': json.loads(form.errors.as_json())}, safe=False, status=400)
+    context = {
+        'form': form,
+    }
+    return render(request, 'exchange/signup.html', context)
 
 
 def signin_view(request):
-  pass
+    pass
 
 
 def signin_view(request):
-  if request.user.is_authenticated:
-    return redirect('home')
-  form = CreateAccountForm()
-  if request.method == 'POST':
-    form = CreateAccountForm(request.POST)
-    username = form['username'].value()
-    password = form['password1'].value()
-    if username == '':
-      return JsonResponse({'result': False, 'errors': {'username': [{'message': 'This field cannot be blank'}]}}, status=400, safe=False)
+    if request.user.is_authenticated:
+        return redirect('home')
+    form = CreateAccountForm()
+    if request.method == 'POST':
+        form = CreateAccountForm(request.POST)
+        username = form['username'].value()
+        password = form['password1'].value()
+        if username == '':
+            return JsonResponse({'result': False, 'errors': {'username': [{'message': 'This field cannot be blank'}]}}, status=400, safe=False)
 
-    if password == '':
-      return JsonResponse({'result': False, 'errors': {'password1': [{'message': 'This field cannot be blank'}]}}, status=400, safe=False)
+        if password == '':
+            return JsonResponse({'result': False, 'errors': {'password1': [{'message': 'This field cannot be blank'}]}}, status=400, safe=False)
 
-    if not Account.objects.filter(username=username).exists():
-      return JsonResponse({'result': False, 'errors': {'username': [{'message': 'User not found, enter another username'}]}}, status=400, safe=False)
+        if not Account.objects.filter(username=username).exists():
+            return JsonResponse({'result': False, 'errors': {'username': [{'message': 'User not found, enter another username'}]}}, status=400, safe=False)
 
-    user = authenticate(request, username=username, password=password)
-    print(user)
-    if user is not None:
-      login(request, user)
-      return JsonResponse({'result': True}, status=200, safe=False)
-    else:
-      return JsonResponse({'result': False, 'errors': {'password1': [{'message': 'Invalid password'}]}}, status=400, safe=False)
+        user = authenticate(request, username=username, password=password)
+        print(user)
+        if user is not None:
+            login(request, user)
+            return JsonResponse({'result': True}, status=200, safe=False)
+        else:
+            return JsonResponse({'result': False, 'errors': {'password1': [{'message': 'Invalid password'}]}}, status=400, safe=False)
 
-  context = {
-      'form': form,
-  }
-  return render(request, 'exchange/signin.html', context)
+    context = {
+        'form': form,
+    }
+    return render(request, 'exchange/signin.html', context)
 
 
 @login_required(login_url='login')
 def signout_view(request):
-  logout(request)
-  return redirect('home')
+    logout(request)
+    return redirect('home')
 
 
 @login_required(login_url='login')
 def transaction_view(request):
-  countries = Country.objects.all()
-  context = {'countries': countries, }
-  return render(request, 'exchange/transaction.html',  context)
+    user = request.user
+    countries = Country.objects.all()
+    context = {'countries': countries, }
+    if request.method == 'POST':
+        print(new_transaction.amount)
+        user_pin_code = request.POST['pin_code']
+        withdraw_amount = decimal.Decimal(request.POST['amount'])
+        received_amount = decimal.Decimal(request.POST['amount_converted'])
+        if user_pin_code != user.pin:
+            return JsonResponse({'result': False, 'errors': {'code_pin': [{'message': 'Incorrect pin'}]}}, safe=False, status=400)
+        receiver = Account.objects.get(
+            username=request.POST['receiver']) or None
+        if receiver is None:
+            return JsonResponse({'result': False, 'errors': {'receiver': [{'message': 'Unkwown receiver'}]}}, safe=False, status=400)
+        # Everything is good we can make the transaction between the too user
+        user.balance -= withdraw_amount
+        receiver.balance += received_amount
+        user.save(update_fields=['balance'])
+        receiver.save(update_fields=['balance'])
+        new_transaction = Transaction(
+            sender=user, receiver=receiver, amount=withdraw_amount)
+        if new_transaction:
+            return JsonResponse({'result': True}, safe=False, status=201)
+
+        return JsonResponse({'result': False, 'errors': 'sever internal error'}, safe=False, status=500)
+
+    return render(request, 'exchange/transaction.html',  context)
 
 
 def get_users_per_country_view(request, country):
-  if country == '':
-    return JsonResponse({'result:': False, 'users': [], 'currency': ''}, safe=False, status=400)
+    if country == ' ':
+        return JsonResponse({'result:': False, 'users': [], 'currency': ''}, safe=False, status=400)
 
-  users = Account.objects.filter(country=country)
-  users = [{'username': user.username, 'first_name': user.first_name,
-            'last_name': user.last_name} for user in users]
-  currency = Country.objects.get(name=country).currency or ''
-  return JsonResponse({'result:': True, 'users': users, 'currency': currency}, safe=False, status=200)
+    users = Account.objects.filter(country=country)
+    users = [{'username': user.username, 'first_name': user.first_name,
+              'last_name': user.last_name} for user in users]
+    currency = Country.objects.get(name=country).currency or ''
+    return JsonResponse({'result:': True, 'users': users, 'currency': currency}, safe=False, status=200)
