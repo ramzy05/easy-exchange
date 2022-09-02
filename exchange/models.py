@@ -1,15 +1,7 @@
 from django.db import models
-from django.conf import settings
-from django.contrib.auth.models import User
-from .utils import get_random_pin
-# Create your models here.
-
-# User = settings.AUTH_USER_MODEL
-
-
-from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
+import random
 # Create your models here.
 
 
@@ -59,7 +51,7 @@ class Account(AbstractBaseUser):
     country = models.CharField(verbose_name=_('country'), max_length=100)
     balance = models.DecimalField(verbose_name=_(
         'balance'), default=5000, max_digits=15, decimal_places=2)
-    pin = models.CharField(max_length=4, default=get_random_pin())
+    pin = models.CharField(max_length=4, default='1111')
     date_joined = models.DateTimeField(
         verbose_name=("date_joined"), auto_now_add=True)
     last_login = models.DateTimeField(verbose_name=_(
