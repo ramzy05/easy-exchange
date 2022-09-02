@@ -5,45 +5,51 @@
 {% endblock title %}
 
 {% block content %}
-<div class="form-container">
-    <form action="" method="post" id="signup-form">
-        {%csrf_token%}
-        <div class="form-control">
-            {{form.username.label_tag}}
-            {{form.username}}
-            <div class="errors"></div>
-        </div>
-        <div class="form-control">
-            {{form.first_name.label_tag}}
-            {{form.first_name}}
-            <div class="errors"></div>
-        </div>
-        <div class="form-control">
-            {{form.last_name.label_tag}}
-            {{form.last_name}}
-            <div class="errors"></div>
-        </div>
-    
-        <div class="form-control">
-            {{form.country}}
-            {{form.country.label_tag}}
-            <div class="errors"></div>
-        </div>
-        <div class="form-control">
-            {{form.password1.label_tag}}
-            {{form.password1}}
-            <div class="errors"></div>
-        </div>
-        <div class="form-control">
-            {{form.password2.label_tag}}
-            {{form.password2}}
-            <div class="errors"></div>
-        </div>
-    
-        <button type="submit" id="submit-btn">Register</button>
-    </form>
-</div>
+<div class="main-content form">
 
+
+    <div class="grid form">
+        <h2>Registration</h2>
+        <div class="form-container signup">
+            <div id="message-box" class="error">
+                <p>This field is required</p>
+            </div>
+            <form action="" method="post" id="signup-form">
+                {%csrf_token%}
+                
+                <div>
+                    <div class="form-control">
+                        {{form.username.label_tag}}
+                        {{form.username}}
+                    </div>
+                    <div class="form-control">
+                        {{form.first_name.label_tag}}
+                        {{form.first_name}}
+                    </div>
+                    <div class="form-control">
+                        {{form.last_name.label_tag}}
+                        {{form.last_name}}
+                    </div>
+                
+                    <div class="form-control">
+                        {{form.country.label_tag}}
+                        {{form.country}}
+                    </div>
+                    <div class="form-control">
+                        {{form.password1.label_tag}}
+                        {{form.password1}}
+                    </div>
+                    <div class="form-control">
+                        {{form.password2.label_tag}}
+                        {{form.password2}}
+                    </div>
+                </div>
+                <button type="submit" id="submit-btn">Register</button>
+                <p>Already have an account ? <a href="{% url 'login' %}"  class="cta">Log In</a></p>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock content %}
 
 

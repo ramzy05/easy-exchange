@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
+from .utils import get_random_pin
 # Create your models here.
 
 # User = settings.AUTH_USER_MODEL
@@ -58,7 +59,7 @@ class Account(AbstractBaseUser):
     country = models.CharField(verbose_name=_('country'), max_length=100)
     balance = models.DecimalField(verbose_name=_(
         'balance'), default=5000, max_digits=15, decimal_places=2)
-    pin = models.CharField(max_length=4, default='0123')
+    pin = models.CharField(max_length=4, default=get_random_pin())
     date_joined = models.DateTimeField(
         verbose_name=("date_joined"), auto_now_add=True)
     last_login = models.DateTimeField(verbose_name=_(
@@ -86,8 +87,7 @@ class Account(AbstractBaseUser):
     def get_balance(self):
         currency = Country.objects.filter(
             name=self.country).first().currency or 'XAF'
-        print(currency)
-        return f'{currency}{self.balance}'
+        return f'{currency} {self.balance}'
 
     @property
     def get_country_currency(self):
@@ -98,6 +98,10 @@ class Account(AbstractBaseUser):
     @property
     def get_receptions(self):
         return Transaction.objects.filter(receiver=self)
+
+    @property
+    def get_fullname(self):
+        return self.first_name.capitalize()+' '+self.last_name.capitalize()
 
 
 class Country(models.Model):
@@ -110,8 +114,28 @@ class Transaction(models.Model):
         Account, related_name='sender', on_delete=models.SET_NULL, null=True, blank=True)
     receiver = models.ForeignKey(
         Account, related_name='receiver', on_delete=models.SET_NULL, null=True, blank=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    amount_received = models.DecimalField(
+        max_digits=100, decimal_places=2, default=0.00)
+    amount_sent = models.DecimalField(
+        max_digits=100, decimal_places=2, default=0.00)
     created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created']
 
     def __str__(self):
         return f'{self.sender.username}-{self.created}-{self.receiver.username}'
+
+    @property
+    def get_amount_sent(self):
+        currency = Country.objects.filter(
+            name=self.sender.country).first().currency or 'XAF'
+        currency
+        return f'{currency} {self.amount_sent}'
+
+    @property
+    def get_amount_received(self):
+        currency = Country.objects.filter(
+            name=self.receiver.country).first().currency or 'XAF'
+        currency
+        return f'{currency} {self.amount_received}'

@@ -5,54 +5,52 @@
 {% endblock title %}
 
 {% block content %}
-{% if request.user.is_authenticated %}
-<a href={% url 'logout' %}>Log Out</a>
-{{request.user.get_transfers}}
-{% else %}
-<a href={% url 'login' %}>Log In</a>
-<a href={% url 'register' %}>Register</a>
-{% endif %}
-
-<div class="form-container">
-    <form action="" method="post" id="transac-form">
-        {%csrf_token%}
-        <div class="form-control">
-            <label for="id_country">Receiver's country</label>
-            <select name="country" id="id_country">
-                <option value=' ' selected>Choose the country</option>
-                {% for country in countries %}
-                <option value="{{country.name}}">{{country.name}}</option>
-                {% endfor %}
-            </select>
+<div class="main-content form ">
+    <div class="grid form">
+        <h2>New Transaction</h2>
+      
+        <div class="form-container">
+            <div id="message-box" class="error">
+                <p>This field is required</p>
+            </div>
+            <form action="" method="post" id="transac-form">
+                {% csrf_token %}
+                <div class="form-control">
+                    <label for="id_country">Receiver's country</label>
+                    <select name="country" id="id_country">
+                        <option value=' ' selected>Choose the country</option>
+                        {% for country in countries %}
+                        <option value="{{country.name}}">{{country.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label for="id_receiver">Receiver</label>
+                    <select name="receiver" id="id_receiver">
+                        <option value=' ' selected>Choose the receiver</option>
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label for="id_amount">From <span>{{request.user.get_country_currency}}</span></label>
+                    <input type="number" value="5" name="amount" id="id_amount" min="5" max={{request.user.balance}}  step="0.01">
+                    
+                </div>
+                <div class="form-control">
+                    <label for="id_amount_converted">To <span></span></label>
+                    <input type="number" min="5" value="" name="amount_converted" id="id_amount_converted"  step="0.01">
+                </div>
+                <div class="form-control">
+                    <label for="id_code_pin">Pin Code</label>
+                    <input type="password" name="pin_code" id="id_code_pin" maxlength="4" placeholder="exemple: 1234">
+                </div>
+            
+                <button type="submit" id="submit-btn">Validate</button>
+            </form>
         </div>
-        <div class="form-control">
-            <label for="id_receiver">Receiver</label>
-            <select name="receiver" id="id_receiver">
-                <option value=' ' selected>Choose the receiver</option>
-                {% for user in users %}
-                <option value="{{user.username}}">
-                    {{user.username}}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="form-control">
-            <label for="id_amount">From <span>{{request.user.get_country_currency}}</span></label>
-            <input type="number" value="5" name="amount" id="id_amount" min="5" max={{request.user.balance}}>
-        </div>
-        <div class="form-control">
-            <label for="id_amount_converted">To <span></span></label>
-            <input type="number" min="5" value="" name="amount_converted" id="id_amount_converted">
-            <!-- <input type="number" value="10" name="amount_converted" id="id_amount_converted" readonly> -->
-        </div>
-        <div class="form-control">
-            <label for="id_code_pin">Pin Code</label>
-            <input type="password" name="pin_code" id="id_code_pin" maxlength="4" placeholder="1234">
-        </div>
-    
-        <button type="submit" id="submit-btn">Send</button>
-    </form>
+       
+    </div>
 </div>
+
 
 {% endblock content %}
 
@@ -95,7 +93,7 @@ function handleCountryOnChange(e){
     }
     e.preventDefault()
         const country = event.target.value
-        const url = '/account/users/'+country
+        const url = '/users/'+country
         const method = 'POST'
         const csrftoken = getCookie('csrftoken')
         const xhr = new XMLHttpRequest()
@@ -105,6 +103,7 @@ function handleCountryOnChange(e){
         xhr.setRequestHeader('X-CSRFToken', csrftoken)
         xhr.onload =  function(){
             if(xhr.status === 200){
+                // console.log(xhr.response.users)
                 load_users(xhr.response.users)
                 toCurrencyLabel.innerHTML = xhr.response.currency    
                
@@ -173,6 +172,7 @@ fetch(`https://api.apilayer.com/exchangerates_data/convert?to=${to}&from=${from}
   .then(result => {
     let data = JSON.parse(result)
     if(data?.success === true){
+        data.result = Number(data.result).toFixed(2)
         if(direction === 'from-to'){
             toCurrencyInput.value = data.result
         }

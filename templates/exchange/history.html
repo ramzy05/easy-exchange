@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_format %}
+
+{% block title %}
+    Register
+{% endblock title %}
+
+{% block content %}
+<div class="main-content">
+    <div class="grid transaction">
+        <div class="latest-transaction">
+            <h2>History</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>N°</th>
+                        <th>Sender</th>
+                        <th>Amount <i class="uil uil-arrow-up-right"></i></th>
+                        <th>Receiver</th>
+                        <th>Amount <i class="uil uil-arrow-down-left"></i></th>
+                        <th>Day</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if transactions %}
+
+                    {% for trans in transactions %}
+
+                    <tr>
+                        <td>{{trans.0}}</td>
+                        <td>{{trans.1.sender|format_user:request.user}}</td>
+                        <td class="amount amount-sent">{{trans.1.get_amount_sent}}</td>
+                        <td>{{trans.1.receiver|format_user:request.user}}</td>
+                        <td class="amount amount-received">{{trans.1.get_amount_received}}</td>
+                        <td>{{trans.1.created|date:"D d M Y"}}</td>
+                        <td>{{trans.1.created|time:"H:i:s"}}</td>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+            <!-- <a href="#" class="view-all-link">View All <i class="uil uil-angle-right"></i></a> -->
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block scripts %}
+<script src="{% static 'js/code_pin_toggle.js' %}" defer></script>
+{% endblock scripts %}
+
