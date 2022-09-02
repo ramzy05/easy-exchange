@@ -21,7 +21,7 @@ function typeOnlyDigits(e){
 
 function load_users(users){
     let usersFormats = `<option value=" ">Choose the receiver</option>`
-    for(user of users){
+    for(const user of users){
         usersFormats += `<option value="${user.username}">${user.first_name} ${user.last_name}</option>`
 
     }
@@ -37,7 +37,7 @@ function handleCountryOnChange(e){
     }
     e.preventDefault()
         spinner.removeAttribute('hidden');
-        const country = event.target.value
+        const country = e.target.value
         const url = '/users/'+country
         const method = 'POST'
         const csrftoken = getCookie('csrftoken')
@@ -63,7 +63,7 @@ function handleCountryOnChange(e){
             } else if(xhr.status === 404){
                 console.log(xhr.response)
                 toCurrencyLabel.innerHTML =''
-            }else if (status === 500){
+            }else if (xhr.status === 500){
                 alert('There was a server error, please try again.')
             }
         }

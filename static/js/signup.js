@@ -12,7 +12,7 @@
     xhr.onload =  function(){
         if(xhr.status === 201){
             // console.log(xhr.response)
-            displayMessage('Your account has been successfull created', 'success')
+            displayMessage('Your account has been successfully created', 'success')
             // myForm.reset()
             redirect(xhr.response.url)
         } else if(xhr.status === 400){
