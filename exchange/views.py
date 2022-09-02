@@ -1,4 +1,3 @@
-from django.core.exceptions import ValidationError
 import json
 from django.shortcuts import render, redirect
 from .forms import CreateAccountForm
@@ -6,7 +5,6 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .models import Account, Country, Transaction
 from django.http.response import JsonResponse
-from django.conf import settings
 from django.db.models import Q
 import decimal
 
@@ -27,7 +25,7 @@ def home_view(request):
     return render(request, 'exchange/home.html', context)
 
 
-def create_account_view(request):
+def registration_view(request):
     if request.user.is_authenticated:
         return redirect('home')
     form = CreateAccountForm()
@@ -48,6 +46,7 @@ def signin_view(request):
     if request.user.is_authenticated:
         return redirect('home')
     form = CreateAccountForm()
+
     if request.method == 'POST':
         form = CreateAccountForm(request.POST)
         username = form['username'].value()
@@ -85,15 +84,18 @@ def signout_view(request):
 def transaction_view(request):
     user = request.user
     countries = Country.objects.all()
-    context = {'countries': countries, }
+    context = {'countries': countries}
+
     if request.method == 'POST':
         user_pin_code = request.POST['pin_code']
         withdraw_amount = decimal.Decimal(request.POST['amount'])
         received_amount = decimal.Decimal(request.POST['amount_converted'])
+
         if user_pin_code != user.pin:
             return JsonResponse({'result': False, 'errors': {'code_pin': [{'message': 'Your pin code is incorrect'}]}}, safe=False, status=400)
         receiver = Account.objects.get(
             username=request.POST['receiver']) or None
+
         if receiver is None:
             return JsonResponse({'result': False, 'errors': {'receiver': [{'message': 'Unkwown receiver'}]}}, safe=False, status=400)
         # Everything is good we can make the transaction between the too user
@@ -106,7 +108,7 @@ def transaction_view(request):
         if new_transaction:
             return JsonResponse({'result': True, 'url': '/home'}, safe=False, status=201)
 
-        return JsonResponse({'result': False, 'errors': 'sever internal error'}, safe=False, status=500)
+        return JsonResponse({'result': False, 'errors': 'server internal error'}, safe=False, status=500)
 
     return render(request, 'exchange/transaction.html',  context)
 
@@ -117,8 +119,10 @@ def get_users_per_country_view(request, country):
 
     users = Account.objects.filter(country=country).exclude(
         username=request.user.username)
+
     users = [{'username': user.username, 'first_name': user.first_name,
               'last_name': user.last_name} for user in users]
+
     currency = Country.objects.get(name=country).currency or ''
     return JsonResponse({'result:': True, 'users': users, 'currency': currency}, safe=False, status=200)
 
@@ -129,7 +133,7 @@ def history_view(request):
 
     transactions = Transaction.objects.filter(Q(sender=user) | Q(receiver=user)
                                               )
-    # to get index for the table
     transactions = [[i+1, t] for i, t in enumerate(transactions)]
+    # in the templates i is going to be the index in the table
     context = {'transactions': transactions}
     return render(request, 'exchange/history.html', context)

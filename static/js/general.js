@@ -13,8 +13,8 @@ function getCookie(name) {
     }
     return cookieValue;
   }
-  function redirect(url){
+function redirect(url){
     setTimeout(()=> { window.location.href = url}, 1700)
     //hidde message occurs after 1500ms
     return
-  }
+}

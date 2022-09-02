@@ -22,7 +22,7 @@
         //    console.log(xhr.response)
                
            
-        }else if (status === 500){
+        }else if (xhr.status === 500){
             alert('There was a server error, please try again.')
         }
     }

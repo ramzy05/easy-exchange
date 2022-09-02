@@ -126,7 +126,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-API_KEY = 'wS55XguJEzNOuWaCmBQ2sCLmLKtg2vge'
 AUTH_USER_MODEL = 'exchange.Account'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = '/'
