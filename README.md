@@ -1,4 +1,6 @@
 EasyExchange
+ - Live demo
+    - https://djangopy-production-83e4.up.railway.app
  pour éxécuter le programme en local il faudra suivre les étapes suivantes:
 
  - Dans un terminal, ouvrir le dossier contenant ce fichier 
