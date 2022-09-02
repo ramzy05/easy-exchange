@@ -7,6 +7,9 @@ const toCurrencyLabel = document.querySelector('[for="id_amount_converted"]').qu
 const fromCurrencyInput = document.querySelector('#id_amount')
 const toCurrencyInput = document.querySelector('#id_amount_converted')
 
+const submitBtn = document.querySelector('#submit-btn')
+
+
 countryInput.onchange = handleCountryOnChange 
 
 fromCurrencyInput.onchange = handleChangeOnFromAmountInput
@@ -115,6 +118,7 @@ var requestOptions = {
 };
 
 spinner.removeAttribute('hidden')
+submitBtn.disabled = true
 fetch(`https://api.apilayer.com/exchangerates_data/convert?to=${to}&from=${from}&amount=${amount}`, requestOptions)
   .then(response => response.text())
   .then(result => {
@@ -124,6 +128,7 @@ fetch(`https://api.apilayer.com/exchangerates_data/convert?to=${to}&from=${from}
         if(direction === 'from-to'){
             toCurrencyInput.value = data.result
             spinner.setAttribute('hidden', '')
+            submitBtn.disabled = false
         }
         else{
             fromCurrencyInput.value = data.result//to-from
@@ -141,6 +146,9 @@ fetch(`https://api.apilayer.com/exchangerates_data/convert?to=${to}&from=${from}
 
             }
         }
+        spinner.setAttribute('hidden', '')
+        submitBtn.disabled = false
+
     }
   })
   .catch(error => console.log('error', error));
