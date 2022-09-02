@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
     Register
@@ -11,7 +12,7 @@
     <div class="grid form">
         <h2>Registration</h2>
         <div class="form-container signup">
-            <div id="message-box" class="error">
+            <div id="message-box" class="">
                 <p>This field is required</p>
             </div>
             <form action="" method="post" id="signup-form">
@@ -54,6 +55,9 @@
 
 
 {% block scripts %}
+<script src="{% static 'js/display_message.js' %}"></script>
+
+
 <script >
     function handleAccountCreateFormDidSubmit(event){
         event.preventDefault()
@@ -67,10 +71,15 @@
         xhr.open(method, url)
         xhr.onload =  function(){
             if(xhr.status === 201){
-                console.log(xhr.response)
-                myForm.reset()
+                // console.log(xhr.response)
+                displayMessage('Your account has been successfull created', 'success')
+                // myForm.reset()
+                redirect(xhr.response.url)
             } else if(xhr.status === 400){
-               console.log(xhr.response)
+                const formErrors = getAllErrors(xhr.response.errors)
+                displayMessage(formErrors[0], 'error')
+                
+            //    console.log(xhr.response)
                    
                
             }else if (status === 500){

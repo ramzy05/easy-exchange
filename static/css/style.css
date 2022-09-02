@@ -335,6 +335,44 @@ td.amount{
     column-gap: 1rem;
     align-items: center;
 }
+
+form#transac-form{
+    position: relative;
+}
+
+
+
+#spinner:not([hidden]) {
+    position: absolute;
+    top: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+#spinner::after {
+    content: "";
+    width: 25px;
+    height: 25px;
+    border: 2px solid transparent;
+    border-top: 3px solid var(--accent-color);
+      border-left: 3px solid var(--accent-color);
+      border-right: 3px solid var(--accent-color);
+    border-radius: 100%;
+    will-change: transform;
+    animation: spin 1s infinite linear
+}
+  
+@keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+}
+  
+
 #transac-form .form-control:nth-last-of-type(1){
 margin-bottom: 1rem;
 }
@@ -386,7 +424,7 @@ select {
 }
 
 #message-box{
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     position: absolute;
@@ -397,13 +435,23 @@ select {
     height: 60px;
     background: transparent;
     border-radius: var(--border-radius);
-    color:var(--success) ;
+    color:var(--gray-color) ;
     font-size: 1.04rem;
 }
 
-#message-box.errorcd{
+#message-box.error{
     color:var(--error) ;
 }
+
+#message-box.success{
+    color:var(--success) ;
+}
+
+#message-box.show{
+    display: flex;
+}
+
+
 
 form#signup-form >div{
     align-self: center;

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
     Login
@@ -10,7 +11,7 @@
         <h2>Log In</h2>
       
         <div class="form-container">
-            <div id="message-box" class="error">
+            <div id="message-box" class="">
                 <p>This field is required</p>
             </div>
             <form action="" method="post" id="signin-form">
@@ -36,6 +37,8 @@
 
 
 {% block scripts %}
+<script src="{% static 'js/display_message.js' %}"></script>
+
 <script >
 
     function handleAccountCreateFormDidSubmit(event){
@@ -52,10 +55,14 @@
         xhr.setRequestHeader('X-CSRFToken', csrftoken)
         xhr.onload =  function(){
             if(xhr.status === 200){
-                console.log(xhr.response)
-                myForm.reset()
+                // console.log(xhr.response)
+                // myForm.reset()
+                displayMessage('You have been authenticated', 'success')
+                redirect(xhr.response.url)
             } else if(xhr.status === 400){
-               console.log(xhr.response)
+                const formErrors = getAllErrors(xhr.response.errors)
+                displayMessage(formErrors[0], 'error')
+            //    console.log(xhr.response)
                    
                
             }else if (status === 500){
@@ -69,6 +76,5 @@
     }
     const signinForm = document.getElementById('signin-form')
     signinForm.addEventListener('submit', handleAccountCreateFormDidSubmit)
-    console.log(signinForm)
 </script>    
 {% endblock scripts %}

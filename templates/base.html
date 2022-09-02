@@ -41,6 +41,11 @@
         }
         return cookieValue;
       }
+      function redirect(url){
+        setTimeout(()=> { window.location.href = url}, 1700)
+        //hidde message occurs after 1500ms
+        return
+      }
     </script>  
   {% block scripts %}
     

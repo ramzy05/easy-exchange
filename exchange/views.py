@@ -35,7 +35,7 @@ def create_account_view(request):
         form = CreateAccountForm(request.POST)
         if form.is_valid():
             form.save()
-            return JsonResponse({'result': True}, safe=False, status=201)
+            return JsonResponse({'result': True, 'url': '/login'}, safe=False, status=201)
         else:
             return JsonResponse({'result': False, 'errors': json.loads(form.errors.as_json())}, safe=False, status=400)
     context = {
@@ -53,10 +53,10 @@ def signin_view(request):
         username = form['username'].value()
         password = form['password1'].value()
         if username == '':
-            return JsonResponse({'result': False, 'errors': {'username': [{'message': 'This field cannot be blank'}]}}, status=400, safe=False)
+            return JsonResponse({'result': False, 'errors': {'username': [{'message': 'Username cannot be blank'}]}}, status=400, safe=False)
 
         if password == '':
-            return JsonResponse({'result': False, 'errors': {'password1': [{'message': 'This field cannot be blank'}]}}, status=400, safe=False)
+            return JsonResponse({'result': False, 'errors': {'password1': [{'message': 'Password field cannot be blank'}]}}, status=400, safe=False)
 
         if not Account.objects.filter(username=username).exists():
             return JsonResponse({'result': False, 'errors': {'username': [{'message': 'User not found, enter another username'}]}}, status=400, safe=False)
@@ -65,7 +65,7 @@ def signin_view(request):
         print(user)
         if user is not None:
             login(request, user)
-            return JsonResponse({'result': True}, status=200, safe=False)
+            return JsonResponse({'result': True, 'url': '/home'}, status=200, safe=False)
         else:
             return JsonResponse({'result': False, 'errors': {'password1': [{'message': 'Invalid password'}]}}, status=400, safe=False)
 
@@ -91,7 +91,7 @@ def transaction_view(request):
         withdraw_amount = decimal.Decimal(request.POST['amount'])
         received_amount = decimal.Decimal(request.POST['amount_converted'])
         if user_pin_code != user.pin:
-            return JsonResponse({'result': False, 'errors': {'code_pin': [{'message': 'Incorrect pin'}]}}, safe=False, status=400)
+            return JsonResponse({'result': False, 'errors': {'code_pin': [{'message': 'Your pin code is incorrect'}]}}, safe=False, status=400)
         receiver = Account.objects.get(
             username=request.POST['receiver']) or None
         if receiver is None:
@@ -104,7 +104,7 @@ def transaction_view(request):
         new_transaction = Transaction.objects.create(
             sender=user, receiver=receiver, amount_sent=withdraw_amount, amount_received=received_amount)
         if new_transaction:
-            return JsonResponse({'result': True}, safe=False, status=201)
+            return JsonResponse({'result': True, 'url': '/home'}, safe=False, status=201)
 
         return JsonResponse({'result': False, 'errors': 'sever internal error'}, safe=False, status=500)
 

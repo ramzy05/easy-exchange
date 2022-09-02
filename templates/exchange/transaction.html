@@ -1,4 +1,6 @@
 {% extends 'base.html' %}
+{% load static %}
+
 
 {% block title %}
     Transaction
@@ -10,11 +12,12 @@
         <h2>New Transaction</h2>
       
         <div class="form-container">
-            <div id="message-box" class="error">
-                <p>This field is required</p>
+            <div id="message-box" class="">
+                <p></p>
             </div>
             <form action="" method="post" id="transac-form">
                 {% csrf_token %}
+                <div hidden  id="spinner"></div>
                 <div class="form-control">
                     <label for="id_country">Receiver's country</label>
                     <select name="country" id="id_country">
@@ -55,7 +58,12 @@
 {% endblock content %}
 
 {% block scripts %}
+
+<script src="{% static 'js/display_message.js' %}"></script>
+
+
 <script>
+const spinner = document.getElementById("spinner");
 const codePin = document.getElementById('id_code_pin')
 const countryInput = document.getElementById('id_country')
 const receiverInput = document.getElementById('id_receiver')
@@ -86,12 +94,14 @@ function load_users(users){
 }
 
 function handleCountryOnChange(e){
+    
     if(e.target.value === ' '){
         load_users([])
         toCurrencyLabel.innerHTML = ''
         return
     }
     e.preventDefault()
+        spinner.removeAttribute('hidden');
         const country = event.target.value
         const url = '/users/'+country
         const method = 'POST'
@@ -104,6 +114,7 @@ function handleCountryOnChange(e){
         xhr.onload =  function(){
             if(xhr.status === 200){
                 // console.log(xhr.response.users)
+                spinner.setAttribute('hidden', '');
                 load_users(xhr.response.users)
                 toCurrencyLabel.innerHTML = xhr.response.currency    
                
@@ -129,6 +140,7 @@ function handleCountryOnChange(e){
 
 function handleChangeOnFromAmountInput(e) {
     imposeMinMax(e.target)
+   
     if (countryInput.value !== ''){
         let to = toCurrencyLabel.innerText
         let from = fromCurrencyLabel.innerText
@@ -159,14 +171,15 @@ function convertAmount(to,from,amount, direction){
     // return 100
     if (to == '' || from == '') return
     var myHeaders = new Headers();
-myHeaders.append("apikey", "wS55XguJEzNOuWaCmBQ2sCLmLKtg2vge");
-
+    myHeaders.append("apikey", "wS55XguJEzNOuWaCmBQ2sCLmLKtg2vge");
+    
 var requestOptions = {
   method: 'GET',
   redirect: 'follow',
   headers: myHeaders
 };
 
+spinner.removeAttribute('hidden')
 fetch(`https://api.apilayer.com/exchangerates_data/convert?to=${to}&from=${from}&amount=${amount}`, requestOptions)
   .then(response => response.text())
   .then(result => {
@@ -175,10 +188,15 @@ fetch(`https://api.apilayer.com/exchangerates_data/convert?to=${to}&from=${from}
         data.result = Number(data.result).toFixed(2)
         if(direction === 'from-to'){
             toCurrencyInput.value = data.result
+            spinner.setAttribute('hidden', '')
         }
         else{
+            fromCurrencyInput.value = data.result//to-from
+        /*
+                if the result is greater than the max of my account, let's us set fromInput to the max
+                and recall convertAmount
 
-            fromCurrencyInput.value = data.result
+        */
             if(parseInt(data.result) > fromCurrencyInput.max){
                 imposeMinMax(fromCurrencyInput)
                 let to = toCurrencyLabel.innerText
@@ -216,12 +234,14 @@ function handleTransactionFormDidSubmit(e){
         xhr.open(method, url)
         xhr.onload =  function(){
             if(xhr.status === 201){
-                console.log(xhr.response)
-                myForm.reset()
+                // console.log(xhr.response)
+                // myForm.reset()
+                displayMessage('Transaction has been completed', 'success')
+                redirect(xhr.response.url)
             } else if(xhr.status === 400){
-               console.log(xhr.response)
-                   
-               
+                const formErrors = getAllErrors(xhr.response.errors)
+                displayMessage(formErrors[0], 'error')
+            //    console.log(xhr.response)
             }else if (status === 500){
                 alert('There was a server error, please try again.')
             }
@@ -231,7 +251,7 @@ function handleTransactionFormDidSubmit(e){
         }
         xhr.send(myFormData)
     }else{
-        alert('please fill all the fields')
+        displayMessage('please fill all the fields','error')
     }
 }
     const transacForm = document.getElementById('transac-form')
