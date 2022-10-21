@@ -1,0 +1,28 @@
+<div class="side-bar container">
+    <span class="logo"><span>E</span>asy<span>E</span>xch<span>a</span>nge</span>
+    <nav>
+        <ul class="nav-links">
+            <li><a href="{% url 'home' %}" class="home"><i class="uil uil-home"></i> Home</a></li>
+            <li><a href="{% url 'make_transaction' %}" class="transact"><i class="uil uil-exchange-alt"></i> Transactions</a></li>
+            <li><a href="{% url 'history' %}" class="history"><i class="uil uil-history"></i> History</a></li>
+        </ul>
+        
+    </nav>
+    <div>
+        {% if request.user.is_authenticated %}
+
+        <div>
+            
+            <p><i class="uil uil-user-circle"></i>  {{request.user.get_fullname}}</p>
+            <span>@{{request.user.username}}</span>
+        </div>
+        {% endif %}
+        {% if request.user.is_authenticated %}
+        <a href="{% url 'logout' %}"><i class="uil uil-signout"></i>  Log Out</a>
+        {% else %}
+        <a href="{% url 'register' %}">Register</a>
+        <a href="{% url 'login' %}"><i class="uil uil-signin"></i>  Log In</a>
+        {% endif %}
+
+    </div>
+</div>

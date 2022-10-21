@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_format %}
+
+
+{% block title %}
+    Register
+{% endblock title %}
+
+{% block content %}
+<div class="main-content">
+    <h1>Dashboard</h1>
+    <div class="grid">
+        <div class="links">
+            <div>
+                <a href="{% url 'make_transaction' %}">
+                    <i class="uil uil-arrow-circle-right"></i>
+                    <span>Send money</span>
+                </a>
+
+            </div>
+            <div>
+                <a href="#">
+                    <i class="uil uil-ellipsis-h"></i>
+                    <span>More</span>
+                </a>
+
+            </div>
+        </div>
+        <div class="total-bal">
+            <div class="total">
+                <span>Total balance</span>
+                <div>
+                    <sup class="currency">{{request.user.get_country_currency}}</sup>
+                    <span class="balance">{{request.user.balance}}</span>
+                </div>
+            </div>
+            <div class="total code-pin-box">
+                <span>You pin code</span>
+                <div>
+                    <span class="code-pin" id="code-pin" data-code="{{request.user.pin}}">* * * *</span>
+                    <span id="code-pin-toggle" ><i class="uil-eye-slash"></i><i class="uil-eye"></i></span>
+                </div>
+            </div>
+        </div>
+        <div class="latest-transaction">
+            <h2>Recent Transactions</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>N°</th>
+                        <th>Sender</th>
+                        <th>Amount <i class="uil uil-arrow-up-right"></i></th>
+                        <th>Receiver</th>
+                        <th>Amount <i class="uil uil-arrow-down-left"></i></th>
+                        <th>Day</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if transactions %}
+                  
+                    <tr>
+                        <td>{{transactions.0.0}}</td>
+                        <td>{{transactions.0.1.sender|format_user:request.user}}</td>
+                        <td class="amount amount-sent">{{transactions.0.1.get_amount_sent}}</td>
+                        <td>{{transactions.0.1.receiver|format_user:request.user}}</td>
+                        <td class="amount amount-received">{{transactions.0.1.get_amount_received}}</td>
+                        <td>{{transactions.0.1.created|date:"D d M Y"}}</td>
+                        <td>{{transactions.0.1.created|time:"H:i:s"}}</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            <a href="{% url 'history' %}" class="view-all-link">View All <i class="uil uil-angle-right"></i></a>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block scripts %}
+<script src="{% static 'js/code_pin_toggle.js' %}" defer></script>
+{% endblock scripts %}
+

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    Login
+{% endblock title %}
+
+{% block content %}
+<div class="main-content form">
+    <div class="grid form signin">
+        <h2>Log In</h2>
+      
+        <div class="form-container">
+            <div id="message-box" class="">
+            </div>
+            <form action="" method="post" id="signin-form">
+            <div class="form-control">
+                {{form.username.label_tag}}
+                {{form.username}}
+            </div>
+            <div class="form-control">
+                {{form.password1.label_tag}}
+                {{form.password1}}
+            </div>
+            
+            <button type="submit" id="submit-btn">Log In</button>
+            <p>You don't have an account ? <a href="{% url 'register' %}" class="cta">Register Now</a></p>
+            </form>
+        </div>
+       
+    </div>
+</div>
+
+
+{% endblock content %}
+
+
+{% block scripts %}
+<script src="{% static 'js/display_message.js' %}"></script>
+<script src="{% static 'js/signin.js' %}"></script>
+   
+{% endblock scripts %}

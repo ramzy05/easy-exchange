@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    Register
+{% endblock title %}
+
+{% block content %}
+<div class="main-content form">
+
+
+    <div class="grid form">
+        <h2>Registration</h2>
+        <div class="form-container signup">
+            <div id="message-box" class="">
+                <p></p>
+            </div>
+            <form action="" method="post" id="signup-form">
+                {%csrf_token%}
+                
+                <div>
+                    <div class="form-control">
+                        {{form.username.label_tag}}
+                        {{form.username}}
+                    </div>
+                    <div class="form-control">
+                        {{form.first_name.label_tag}}
+                        {{form.first_name}}
+                    </div>
+                    <div class="form-control">
+                        {{form.last_name.label_tag}}
+                        {{form.last_name}}
+                    </div>
+                
+                    <div class="form-control">
+                        {{form.country.label_tag}}
+                        {{form.country}}
+                    </div>
+                    <div class="form-control">
+                        {{form.password1.label_tag}}
+                        {{form.password1}}
+                    </div>
+                    <div class="form-control">
+                        {{form.password2.label_tag}}
+                        {{form.password2}}
+                    </div>
+                </div>
+                <button type="submit" id="submit-btn">Register</button>
+                <p>Already have an account ? <a href="{% url 'login' %}"  class="cta">Log In</a></p>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+
+{% block scripts %}
+<script src="{% static 'js/display_message.js' %}"></script>
+<script src="{% static 'js/signup.js' %}"></script>
+ 
+{% endblock scripts %}

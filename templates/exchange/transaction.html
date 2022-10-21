@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Transaction
+{% endblock title %}
+
+{% block content %}
+<div class="main-content form ">
+    <div class="grid form">
+        <h2>New Transaction</h2>
+      
+        <div class="form-container">
+            <div id="message-box" class="">
+                <p></p>
+            </div>
+            <form action="" method="post" id="transac-form">
+                {% csrf_token %}
+                <div hidden  id="spinner"></div>
+                <div class="form-control">
+                    <label for="id_country">Receiver's country</label>
+                    <select name="country" id="id_country">
+                        <option value=' ' selected>Choose the country</option>
+                        {% for country in countries %}
+                        <option value="{{country.name}}">{{country.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label for="id_receiver">Receiver</label>
+                    <select name="receiver" id="id_receiver">
+                        <option value=' ' selected>Choose the receiver</option>
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label for="id_amount">From <span>{{request.user.get_country_currency}}</span></label>
+                    <input type="number" value="6" name="amount" id="id_amount" min="6" max={{request.user.balance}}  step="0.01">
+                    
+                </div>
+                <div class="form-control">
+                    <label for="id_amount_converted">To <span></span></label>
+                    <input type="number" min="6" value="" name="amount_converted" id="id_amount_converted"  step="0.01">
+                </div>
+                <div class="form-control">
+                    <label for="id_code_pin">Pin Code</label>
+                    <input type="password" name="pin_code" id="id_code_pin" maxlength="4" placeholder="exemple: 1234">
+                </div>
+            
+                <button type="submit" id="submit-btn">Validate</button>
+            </form>
+        </div>
+       
+    </div>
+</div>
+
+
+{% endblock content %}
+
+{% block scripts %}
+
+<script src="{% static 'js/display_message.js' %}"></script>
+<script src="{% static 'js/transaction.js' %}"></script>
+
+{% endblock scripts %}
+
+
